@@ -6,7 +6,9 @@ order: 3
 
 ## sharegpt
 
-IMPORTANT: ShareGPT is deprecated!. Please see [chat_template](#chat_template) section below.
+::: {.callout-important}
+ShareGPT is deprecated!. Please see [chat_template](#chat_template) section below.
+:::
 
 ## pygmalion
 
@@ -42,8 +44,9 @@ datasets:
     type: chat_template
 
     field_messages: conversations
-    message_field_role: from
-    message_field_content: value
+    message_property_mappings:
+      role: from
+      content: value
 
 # new (if setting a new chat_template like chatml, gemma, etc)
 chat_template: chatml
@@ -52,8 +55,9 @@ datasets:
     type: chat_template
 
     field_messages: conversations
-    message_field_role: from
-    message_field_content: value
+    message_property_mappings:
+      role: from
+      content: value
 ```
 
 We recommend checking the below examples for other usecases.
@@ -100,6 +104,10 @@ datasets:
     type: chat_template
 ```
 
+::: {.callout-important}
+Please make sure that your `tokenizer.eos_token` is same as EOS/EOT token in template. Otherwise, set `eos_token` under `special_tokens`.
+:::
+
 5. (Advanced) Using fine-grained control over tokens and turns to train in a conversation
 
 For a data sample that looks like:
@@ -138,12 +146,15 @@ datasets:
     type: chat_template
     chat_template: tokenizer_default
     field_messages: conversations
-    message_field_role: from
-    message_field_content: value
+    message_property_mappings:
+      role: from
+      content: value
     roles_to_train: []
     train_on_eos: turn
     message_field_training: train
     message_field_training_detail: train_detail
 ```
 
-Tip: It is not necessary to use both `message_field_training` and `message_field_training_detail` at a time.
+::: {.callout-tip}
+It is not necessary to set both `message_field_training` and `message_field_training_detail` at once.
+:::

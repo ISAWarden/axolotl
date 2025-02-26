@@ -142,10 +142,19 @@ datasets:
 
     # Key containing the messages (default: "messages")
     field_messages: messages
-    # Key for role in each message (default: "role")
-    message_field_role: role
-    # Key for content in each message (default:  "content")
-    message_field_content: content
+
+    # Mapping of properties from the input dataset to the chat template.
+    # (default: message_property_mappings={'role':'role', 'content':'content'})
+    # If a property exists in the template but not in this mapping, the system will attempt
+    # to load it directly from the message using the property name as the key.
+    # Example: In the mapping below, 'from' is loaded from input dataset and used as 'role',
+    # while 'value' is loaded and used as 'content' in the chat template.
+    message_property_mappings:
+      role: from
+      content: value
+      # ...
+
+    message_property_mappings:
 
     # Optional[Dict[str, List]]. Roles mapping in the messages. The default is:
     roles:
@@ -157,7 +166,7 @@ datasets:
     # IMPORTANT: The following fields determine which parts of the conversation to train on.
     # Priority order: message_field_training > message_field_training_detail > train_on_inputs or role in roles_to_train
     # See examples at `docs/dataset-formats/conversation.qmd`
-    # Note: If the below 4 fields are empty, defaults to training only on the last message.
+    # Note: If the below 4 fields are set to empty, defaults to training only on the last message.
 
     # Optional[List[str]]. Roles to train on. The tokens from these roles will be considered for the loss.
     roles_to_train: ["assistant"]  # default
@@ -165,6 +174,7 @@ datasets:
     # - all: train on all EOS tokens
     # - turn (default): train on the EOS token at the end of each trainable turn
     # - last: train on the last EOS token in the conversation
+    # TIP: Please make sure that your `tokenizer.eos_token` is same as EOS/EOT token in template. Otherwise, set `eos_token` under `special_tokens`.
     train_on_eos: last
     # The key in the message turn that indicates via boolean whether tokens of a turn should be considered for training. Useful to selectively train on certain turns besides the `roles_to_train`.
     message_field_training: training
@@ -305,6 +315,13 @@ lora_modules_to_save:
 
 lora_fan_in_fan_out: false
 
+# Apply custom LoRA autograd functions and activation function Triton kernels for
+# speed and memory savings
+# See: https://axolotl-ai-cloud.github.io/axolotl/docs/lora_optims.html
+lora_mlp_kernel: true
+lora_qkv_kernel: true
+lora_o_kernel: true
+
 # LoRA+ hyperparameters
 # For more details about the following options, see:
 # https://arxiv.org/abs/2402.12354  and `src/axolotl/core/train_builder.py`
@@ -391,7 +408,10 @@ save_total_limit: # Checkpoints saved at a time
 max_steps:
 
 # bool of whether to include tokens trainer per second in the training metrics. This iterates over the entire dataset once, so it takes some time.
-include_tokens_per_second:
+include_tokens_per_second: # Optional[bool]
+
+# whether to find batch size that fits in memory. Passed to underlying transformers Trainer
+auto_find_batch_size: # Optional[bool]
 
 eval_table_size: # Approximate number of predictions sent to wandb depending on batch size. Enabled above 0. Default is 0
 eval_max_new_tokens: # Total number of tokens generated for predictions sent to wandb. Default is 128
